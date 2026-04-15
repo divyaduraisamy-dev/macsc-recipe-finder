@@ -31,7 +31,7 @@ except ImportError:
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-CSV_FILE = "recipes_trimmed.csv"  # Your recipe CSV file name
+CSV_FILE = "recipes.csv"  # Your recipe CSV file name
 APP_TITLE = "MACSC Recipe Finder"
 
 # =============================================================================
@@ -1374,19 +1374,34 @@ def main():
                 
                 results['_time_bucket'] = results['total_time'].apply(time_bucket)
                 
-                # Shuffle within each category + time bucket so results vary
-                results = (
-                    results
-                    .groupby(['display_category', '_time_bucket'], group_keys=False)
-                    .apply(lambda g: g.sample(frac=1, random_state=None))
-                )
-                
-                # Then sort by bucket so faster recipes still come first
-                results = results.sort_values(
-                    by=['_time_bucket'],
-                    ascending=[True],
-                    na_position='last'
-                )
+                # Shuffle within each category + time bucket so results vary,
+                # then sort by bucket so faster recipes come first
+                try:
+                    shuffled = (
+                        results
+                        .groupby(['display_category', '_time_bucket'], group_keys=False)
+                        .apply(lambda g: g.sample(frac=1, random_state=None))
+                    )
+                    # Verify the column survived the groupby
+                    if '_time_bucket' in shuffled.columns:
+                        results = shuffled.sort_values(
+                            by=['_time_bucket'],
+                            ascending=[True],
+                            na_position='last'
+                        )
+                    else:
+                        results = results.sample(frac=1).sort_values(
+                            by=['_time_bucket'],
+                            ascending=[True],
+                            na_position='last'
+                        )
+                except Exception:
+                    # Fallback: just shuffle and sort by time bucket
+                    results = results.sample(frac=1).sort_values(
+                        by=['_time_bucket'],
+                        ascending=[True],
+                        na_position='last'
+                    )
                 
                 # Show translation notice if Spanish selected
                 if lang == 'es':
