@@ -31,7 +31,7 @@ except ImportError:
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-CSV_FILE = "recipes.csv"  # Your recipe CSV file name
+CSV_FILE = "recipes_trimmed.csv"  # Your recipe CSV file name
 APP_TITLE = "MACSC Recipe Finder"
 
 # =============================================================================
